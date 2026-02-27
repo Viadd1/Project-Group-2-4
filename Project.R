@@ -79,8 +79,8 @@ sig_rules <- rosetta_model$main[rosetta_model$main$pValue < 0.05, ]
 sig_rules
 
 # If these functions give errors when running, download from github to wd and load them manually 
-#source("recalculateRules.R")
-#source("clusterRules.R")
+source("recalculateRules.R")
+source("clusterRules.R")
 
 # Recalculate rules
 recalc_rules <- recalculateRules(selected_data, rosetta_model$main, discrete=TRUE)
