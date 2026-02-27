@@ -89,3 +89,7 @@ recalc_rules <- recalculateRules(selected_data, rosetta_model$main, discrete=TRU
 # Previously, the sig_rules table was used as an argument instead of training df, which caused issues in the figure
 clustered_rules <- clusterRules(selected_data, recalc_rules)
 
+# Link to CytoScape (open CytoScape before running)
+library(RCy3)
+cytoscapePing ()
+vis <- visunetcyto(sig_rules)
