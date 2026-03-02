@@ -93,3 +93,7 @@ clustered_rules <- clusterRules(selected_data, recalc_rules)
 library(RCy3)
 cytoscapePing ()
 vis <- visunetcyto(rosetta_model$main)
+
+# VisuArc diagrams 
+visuArc(vis, 'Human', 'P590')
+visuArc(vis, 'Avian', 'P337')
