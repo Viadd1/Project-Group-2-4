@@ -268,11 +268,20 @@ head(sorted_rules[sorted_rules$decision == "Human",
 library(RCy3)
 cytoscapePing()
 
-# Generate the initial VisuNet network based on the ROSETTA rules
+# Taking all the rules from each class
+avian_rules <- sorted_rules[sorted_rules$decision == "Avian", ]
+human_rules <- sorted_rules[sorted_rules$decision == "Human", ]
 
-vis <- visunetcyto(rosetta_model$main)
+# Computing how many rules each class has
+cat("Avian rules:", nrow(avian_rules), "\n")
+cat("Human rules:", nrow(human_rules), "\n")
 
+# Generate VisuNet networks based on the rules
 # Create specific VisuArc diagrams to see how the highest-impact features 
-# (e.g., specific positions P590, P337) map directly to the Human and Avian classes.
-visuArc(vis, 'Human', 'P590')
-visuArc(vis, 'Avian', 'P337')
+# (e.g., position P590 in both networks) map directly to the Human and Avian classes.
+vis_avian <- visunetcyto(avian_rules)
+visuArc(vis_avian, 'Avian', 'P590')
+
+# Save progress in avian network before running!
+vis_human <- visunetcyto(human_rules)
+visuArc(vis_human, 'Human', 'P590')
