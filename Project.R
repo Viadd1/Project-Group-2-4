@@ -48,89 +48,89 @@ data_clean <- data[, cols_to_keep]
 data_clean$Host
 table(data_clean$Host)
 
-# # ------------------------------------------------------------------------------
-# # SECTION 3: MCFS Hyperparameter Optimization
-# # ------------------------------------------------------------------------------
-# 
-# # Function to test combinations of 'projections' and 'projectionSize'
-# test_mcfs_params <- function(clean_data) {
-#   # Define the parameter grids to search over
-#   proj_sizes <- c(0.05, 0.10, 0.20, 0.30) # Percentage of features evaluated per subset (5% to 30%)
-#   projections_list <- c(500, 1000, 1500)  # Number of random subsets/trees to build
-#   
-#   # Initialize an empty dataframe to log performance metrics
-#   results <- data.frame()
-#   
-#   for (p in projections_list) {
-#     for (ps in proj_sizes) {
-#       cat("Running MCFS -> Projections:", p, "| Projection Size:", ps, "\n")
-#       
-#       # Run MCFS with current grid parameters
-#       temp_model <- mcfs(Host ~ ., 
-#                          data = clean_data, 
-#                          projections = p, 
-#                          projectionSize = ps, 
-#                          splits = 5,             # Defaulting to 5 splits for this test
-#                          threadsNumber = 8,      # Parallel processing (adjust based on CPU)
-#                          cutoffPermutations = 3) # Permutation tests to find significance cutoff
-#       
-#       # Extract key evaluation metrics
-#       num_features <- temp_model$cutoff_value
-#       top_feat <- as.character(temp_model$RI$attribute[1]) # The feature with the highest Relative Importance
-#       
-#       # Append current run's metrics to the results table
-#       results <- rbind(results, data.frame(
-#         Projections = p, 
-#         ProjSize = ps, 
-#         Num_Significant_Features = num_features, 
-#         Top_Feature = top_feat
-#       ))
-#     }
-#   }
-#   return(results)
-# }
-# 
-# # Run the parameter tuning and view results
-# mcfs_experiment_results <- test_mcfs_params(data_clean)
-# print(mcfs_experiment_results)
-# 
-# 
-# # Function to test the effect of the 'splits' parameter on feature selection
-# test_mcfs_splits <- function(clean_data) {
-#   # Fix projection size and count based on optimal findings from previous test
-#   proj_size <- 0.10 
-#   projections <- 1500  
-#   
-#   # Test Shallow (2), Medium (5), and Deep (10) tree splits
-#   splits_list <- c(2, 5, 10)  
-#   
-#   results <- data.frame()
-#   
-#   for (s in splits_list) {
-#     cat("Running MCFS -> Splits:", s, "\n")
-#     
-#     temp_model <- mcfs(Host ~ ., data = clean_data, 
-#                        projections = projections, 
-#                        projectionSize = proj_size, 
-#                        splits = s,           # Dynamic parameter
-#                        threadsNumber = 8, 
-#                        cutoffPermutations = 3) 
-#     
-#     num_features <- temp_model$cutoff_value
-#     top_feat <- as.character(temp_model$RI$attribute[1])
-#     
-#     results <- rbind(results, data.frame(
-#       Splits = s, 
-#       Num_Significant_Features = num_features, 
-#       Top_Feature = top_feat
-#     ))
-#   }
-#   return(results)
-# }
-# 
-# # Run the split experiment and evaluate
-# split_experiment_results <- test_mcfs_splits(data_clean)
-# print(split_experiment_results)
+# ------------------------------------------------------------------------------
+# SECTION 3: MCFS Hyperparameter Optimization
+# ------------------------------------------------------------------------------
+
+# Function to test combinations of 'projections' and 'projectionSize'
+test_mcfs_params <- function(clean_data) {
+  # Define the parameter grids to search over
+  proj_sizes <- c(0.05, 0.10, 0.20, 0.30) # Percentage of features evaluated per subset (5% to 30%)
+  projections_list <- c(500, 1000, 1500)  # Number of random subsets/trees to build
+
+  # Initialize an empty dataframe to log performance metrics
+  results <- data.frame()
+
+  for (p in projections_list) {
+    for (ps in proj_sizes) {
+      cat("Running MCFS -> Projections:", p, "| Projection Size:", ps, "\n")
+
+      # Run MCFS with current grid parameters
+      temp_model <- mcfs(Host ~ .,
+                         data = clean_data,
+                         projections = p,
+                         projectionSize = ps,
+                         splits = 5,             # Defaulting to 5 splits for this test
+                         threadsNumber = 8,      # Parallel processing (adjust based on CPU)
+                         cutoffPermutations = 3) # Permutation tests to find significance cutoff
+
+      # Extract key evaluation metrics
+      num_features <- temp_model$cutoff_value
+      top_feat <- as.character(temp_model$RI$attribute[1]) # The feature with the highest Relative Importance
+
+      # Append current run's metrics to the results table
+      results <- rbind(results, data.frame(
+        Projections = p,
+        ProjSize = ps,
+        Num_Significant_Features = num_features,
+        Top_Feature = top_feat
+      ))
+    }
+  }
+  return(results)
+}
+
+# Run the parameter tuning and view results
+mcfs_experiment_results <- test_mcfs_params(data_clean)
+print(mcfs_experiment_results)
+
+
+# Function to test the effect of the 'splits' parameter on feature selection
+test_mcfs_splits <- function(clean_data) {
+  # Fix projection size and count based on optimal findings from previous test
+  proj_size <- 0.10
+  projections <- 1500
+
+  # Test Shallow (2), Medium (5), and Deep (10) tree splits
+  splits_list <- c(2, 5, 10)
+
+  results <- data.frame()
+
+  for (s in splits_list) {
+    cat("Running MCFS -> Splits:", s, "\n")
+
+    temp_model <- mcfs(Host ~ ., data = clean_data,
+                       projections = projections,
+                       projectionSize = proj_size,
+                       splits = s,           # Dynamic parameter
+                       threadsNumber = 8,
+                       cutoffPermutations = 3)
+
+    num_features <- temp_model$cutoff_value
+    top_feat <- as.character(temp_model$RI$attribute[1])
+
+    results <- rbind(results, data.frame(
+      Splits = s,
+      Num_Significant_Features = num_features,
+      Top_Feature = top_feat
+    ))
+  }
+  return(results)
+}
+
+# Run the split experiment and evaluate
+split_experiment_results <- test_mcfs_splits(data_clean)
+print(split_experiment_results)
 
 # ------------------------------------------------------------------------------
 # SECTION 4: Final MCFS Execution and Feature Selection
@@ -163,50 +163,50 @@ print(top_features)
 # Subset the dataset to retain only the significant features and the target variable
 selected_data <- data_clean[, c(as.character(top_features), "Host")]
 
-# # ------------------------------------------------------------------------------
-# # SECTION 5: ROSETTA Modeling (Rough Set Theory)
-# # ------------------------------------------------------------------------------
-# 
-# # Helper function to evaluate different R.ROSETTA configurations
-# run_rosetta_model <- function(data, reducer, classifier, cv_folds) {
-#   model <- rosetta(
-#     data,
-#     discrete = TRUE,         # Features are treated as categorical/discrete (e.g., amino acids)
-#     reducer = reducer,       # Algorithm for rule reduction (finding reducts)
-#     classifier = classifier, # Algorithm for voting/classification
-#     cv = cv_folds            # Cross-validation folds
-#   )
-#   
-#   # Return combined metadata and quality metrics (Accuracy, AUC, etc.)
-#   return(data.frame(
-#     Reducer = reducer,
-#     Classifier = classifier,
-#     CV = cv_folds,
-#     model$quality
-#   ))
-# }
-# 
-# # Define grid of ROSETTA parameters to test
-# classifiers <- c("StandardVoter", "ObjectTrackingVoter", "NaiveBayesClassifier")
-# cv_values <- c(5, 10)
-# 
-# # Evaluate using the "Johnson" reducer heuristic
-# rosetta_summary_table_johnson <- do.call(rbind, lapply(classifiers, function(clf) {
-#   do.call(rbind, lapply(cv_values, function(cv) {
-#     run_rosetta_model(selected_data, "Johnson", clf, cv)
-#   }))
-# }))
-# print("Johnson Reducer Results:")
-# print(rosetta_summary_table_johnson)
-# 
-# # Evaluate using the "Genetic" reducer heuristic
-# rosetta_summary_table_genetic <- do.call(rbind, lapply(classifiers, function(clf) {
-#   do.call(rbind, lapply(cv_values, function(cv) {
-#     run_rosetta_model(selected_data, "Genetic", clf, cv)
-#   }))
-# }))
-# print("Genetic Reducer Results:")
-# print(rosetta_summary_table_genetic)
+# ------------------------------------------------------------------------------
+# SECTION 5: ROSETTA Modeling (Rough Set Theory)
+# ------------------------------------------------------------------------------
+
+# Helper function to evaluate different R.ROSETTA configurations
+run_rosetta_model <- function(data, reducer, classifier, cv_folds) {
+  model <- rosetta(
+    data,
+    discrete = TRUE,         # Features are treated as categorical/discrete (e.g., amino acids)
+    reducer = reducer,       # Algorithm for rule reduction (finding reducts)
+    classifier = classifier, # Algorithm for voting/classification
+    cv = cv_folds            # Cross-validation folds
+  )
+
+  # Return combined metadata and quality metrics (Accuracy, AUC, etc.)
+  return(data.frame(
+    Reducer = reducer,
+    Classifier = classifier,
+    CV = cv_folds,
+    model$quality
+  ))
+}
+
+# Define grid of ROSETTA parameters to test
+classifiers <- c("StandardVoter", "ObjectTrackingVoter", "NaiveBayesClassifier")
+cv_values <- c(5, 10)
+
+# Evaluate using the "Johnson" reducer heuristic
+rosetta_summary_table_johnson <- do.call(rbind, lapply(classifiers, function(clf) {
+  do.call(rbind, lapply(cv_values, function(cv) {
+    run_rosetta_model(selected_data, "Johnson", clf, cv)
+  }))
+}))
+print("Johnson Reducer Results:")
+print(rosetta_summary_table_johnson)
+
+# Evaluate using the "Genetic" reducer heuristic
+rosetta_summary_table_genetic <- do.call(rbind, lapply(classifiers, function(clf) {
+  do.call(rbind, lapply(cv_values, function(cv) {
+    run_rosetta_model(selected_data, "Genetic", clf, cv)
+  }))
+}))
+print("Genetic Reducer Results:")
+print(rosetta_summary_table_genetic)
 
 # Train the final rule-based model based on optimal parameters 
 # (Johnson reducer, Standard Voter, 5-fold CV chosen here)
@@ -214,7 +214,7 @@ rosetta_model <- rosetta(selected_data,
                          discrete = TRUE,
                          reducer = "Johnson",
                          classifier = "StandardVoter",
-                         cv = 5)
+                         cv = 10)
 
 # Output overall model rules and cross-validation performance metrics
 rules <- rosetta_model$main
@@ -285,3 +285,211 @@ visuArc(vis_avian, 'Avian', 'P590')
 # Save progress in avian network before running!
 vis_human <- visunetcyto(human_rules)
 visuArc(vis_human, 'Human', 'P590')
+
+
+
+
+
+# Load the plotting library
+library(ggplot2)
+
+library(ggplot2)
+
+slide_bg <- "#F3F7FF"   # rgb(243, 247, 255)
+text_col <- "#100090"   # rgb(16, 0, 144)
+
+# ---------------------------------------------------------
+# PLOT 1: The MCFS Projection Size Experiment (Line Graph)
+# ---------------------------------------------------------
+plot_mcfs <- ggplot(mcfs_experiment_results, 
+                    aes(x = as.factor(ProjSize), 
+                        y = Num_Significant_Features, 
+                        color = as.factor(Projections), 
+                        group = Projections)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 4) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Effect of Projection Size and Projection Size on Feature Selection",
+       x = "Projection Size (% of amino acids per tree)",
+       y = "Number of Significant Features",
+       color = "Total Projections") +
+  scale_color_brewer(palette = "Set1") +
+  theme(
+    legend.position = "bottom",
+    
+    plot.background = element_rect(fill = slide_bg, color = NA),
+    panel.background = element_rect(fill = slide_bg, color = NA),
+    
+    # Legend background blending (prevents white boxes around the keys)
+    legend.background = element_rect(fill = slide_bg, color = NA),
+    legend.key = element_rect(fill = slide_bg, color = NA),
+    
+    # TEXT COLOR UPDATES
+    plot.title = element_text(color = text_col, face = "bold"),
+    plot.subtitle = element_text(color = text_col),
+    axis.title.x = element_text(color = text_col),
+    axis.title.y = element_text(color = text_col),
+    axis.text.x = element_text(color = text_col),
+    axis.text.y = element_text(color = text_col),
+    legend.text = element_text(color = text_col),
+    legend.title = element_text(color = text_col)
+  )
+
+# Show and save Plot 1
+print(plot_mcfs)
+ggsave("MCFS_ProjectionSize_Custom.png", plot = plot_mcfs, width = 10, height = 6, dpi = 300)
+
+
+# ---------------------------------------------------------
+# PLOT 2: The MCFS Splits Experiment (Bar Chart)
+# ---------------------------------------------------------
+plot_splits <- ggplot(split_experiment_results, 
+                      aes(x = as.factor(Splits), 
+                          y = Num_Significant_Features)) +
+  
+  geom_col(fill = "#5e81ac", width = 0.6) + 
+  
+  geom_text(aes(label = Num_Significant_Features), vjust = -0.5, size = 5, color = text_col) + 
+  
+  theme_minimal(base_size = 14) +
+  labs(title = "Effect of Tree Depth (Splits)",
+       x = "Maximum Tree Depth (Splits)",
+       y = "Number of Significant Features") +
+  theme(
+    # Background blending
+    plot.background = element_rect(fill = slide_bg, color = NA),
+    panel.background = element_rect(fill = slide_bg, color = NA),
+    
+    # Clean up vertical grid lines 
+    panel.grid.major.x = element_blank(),
+    
+    # TEXT COLOR UPDATES
+    plot.title = element_text(color = text_col, face = "bold"),
+    plot.subtitle = element_text(color = text_col),
+    axis.title.x = element_text(color = text_col),
+    axis.title.y = element_text(color = text_col),
+    axis.text.x = element_text(color = text_col),
+    axis.text.y = element_text(color = text_col)
+  )
+
+# Show and save Plot 2
+print(plot_splits)
+ggsave("MCFS_Splits_Custom.png", plot = plot_splits, width = 10, height = 6, dpi = 300)
+
+
+library(ggplot2)
+
+# Extract the top 10 features
+top_features_data <- head(mcfs_result$RI, 10)
+
+# Define  slide colors 
+slide_bg <- "#F3F7FF"   # rgb(243, 247, 255)
+text_col <- "#100090"   # rgb(16, 0, 144)
+
+# Create the Horizontal Bar Chart
+plot_importance <- ggplot(top_features_data, 
+                          aes(x = reorder(attribute, RI), y = RI)) +
+  
+  # The bars
+  geom_col(fill = "#5e81ac", width = 0.7) +   
+  
+  # The numbers at the end of the bars
+  geom_text(aes(label = round(RI, 3)), 
+            hjust = -0.2, size = 5, color = text_col) + 
+  
+  coord_flip() + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Top 10 Most Significant Amino Acid Positions",
+       subtitle = "Ranked by Monte Carlo Feature Selection (MCFS)",
+       x = "PB1 Protein Position",
+       y = "Relative Importance (RI) Score") +
+  theme(
+    # Background blending
+    plot.background = element_rect(fill = slide_bg, color = NA),
+    panel.background = element_rect(fill = slide_bg, color = NA),
+    
+    # Grid lines cleanup
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    # TEXT COLOR UPDATES
+    plot.title = element_text(color = text_col, face = "bold"),
+    plot.subtitle = element_text(color = text_col),
+    axis.title.x = element_text(color = text_col),
+    axis.title.y = element_text(color = text_col),
+    axis.text.x = element_text(color = text_col),
+    axis.text.y = element_text(color = text_col)
+  )
+
+# Show the plot!
+print(plot_importance)
+
+# Save the high-res image
+ggsave("MCFS_Top10_Features_Custom.png", plot = plot_importance, width = 10, height = 6, dpi = 300)
+
+
+library(ggplot2)
+master_rosetta
+
+# 1. Combine two summary tables into one master table
+master_rosetta <- rbind(rosetta_summary_table_johnson, rosetta_summary_table_genetic)
+
+# 2. Define slide colors 
+slide_bg <- "#F3F7FF"   # rgb(243, 247, 255)
+text_col <- "#100090"   # rgb(16, 0, 144)
+
+# 3. Create the Presentation Plot
+plot_rosetta <- ggplot(master_rosetta, 
+                       aes(x = Classifier, y = accuracyMean, fill = Reducer)) +
+  
+  # Create the grouped bars
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  
+  # Add the error bars to show the Standard Deviation
+  geom_errorbar(aes(ymin = accuracyMean - accuracyStd, ymax = accuracyMean + accuracyStd),
+                position = position_dodge(width = 0.8), width = 0.25, color = text_col, linewidth = 0.8) +
+  
+  # Split the chart into two panels based on the CV folds
+  facet_wrap(~ paste(CV, "- Fold Cross Validation")) +
+  
+  # Zoom in the Y-axis so the differences are highly visible
+  coord_cartesian(ylim = c(0.80, 1.0)) +
+  
+  # Custom colors for the Reducers 
+  scale_fill_manual(values = c("Johnson" = "#5e81ac", "Genetic" = "#88c0d0")) +
+  
+  theme_minimal(base_size = 14) +
+  labs(title = "R.ROSETTA Model Performance Comparison",
+       x = "Voting Classifier",
+       y = "Mean Accuracy (+/- Standard Deviation)",
+       fill = "Algorithm") +
+  
+  theme(
+    # Background blending
+    plot.background = element_rect(fill = slide_bg, color = NA),
+    panel.background = element_rect(fill = slide_bg, color = NA),
+    legend.background = element_rect(fill = slide_bg, color = NA),
+    legend.key = element_rect(fill = slide_bg, color = NA),
+    
+    # Clean up grid lines
+    panel.grid.major.x = element_blank(),
+    
+    # TEXT COLOR UPDATES
+    plot.title = element_text(color = text_col, face = "bold"),
+    plot.subtitle = element_text(color = text_col),
+    axis.title.x = element_text(color = text_col),
+    axis.title.y = element_text(color = text_col),
+    # Angle the x-axis text so the long classifier names don't overlap!
+    axis.text.x = element_text(color = text_col, angle = 45, hjust = 1), 
+    axis.text.y = element_text(color = text_col),
+    legend.text = element_text(color = text_col),
+    legend.title = element_text(color = text_col),
+    
+    # Style the facet headers (the grey boxes saying "5 - Fold" and "10 - Fold")
+    strip.background = element_rect(fill = "#2c3e50", color = NA),
+    strip.text = element_text(color = "white", face = "bold")
+  )
+
+# Show and save the plot
+print(plot_rosetta)
+ggsave("Rosetta_Performance_Custom.png", plot = plot_rosetta, width = 11, height = 7, dpi = 300)
